@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<meta charset="utf-8" />
+		<link href="" rel="shortcut icon" />
+	</head>
+	<body>
+		<form method="post" action="aa" id="form">
+		<table border="1" cellspacing="1" cellpadding="1">
+			<tr><td><input type="text" id="username" /></td>
+				<td><span id="usernametip">*</span></td></tr>
+			<tr><td><input type="text" id="password"/></td>
+				<td><span id="passwordtip">*</span></td></tr>
+				
+				
+		</table>
+		<input type="submit" />
+		</form>
+		
+	</body>
+	<script type="text/javascript">
+		 var $=function(id){
+			return	document.getElementById(id);
+		}
+		
+		var form=$("form");
+		var userName=$("username");
+		var passWord=$("password");
+		var passWordTip=$("passwordtip");
+		var userNameTip=$("usernametip");
+		
+		form.onsubmit=function(e){
+			if(userName.value==""){
+				userNameTip.innerHTML="请输入用户名";
+				e.preventDefault();
+			}
+			if(passWord.value==""){
+				passWordTip.innerHTML="请输入密码";
+				e.preventDefault();
+			}
+			
+		}
+		
+		userName.onfocus=function(){
+			userNameTip.innerHTML="*";
+		}
+		
+		
+		
+		
+		
+		
+		
+	</script>
+</html>
