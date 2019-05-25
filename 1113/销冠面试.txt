@@ -1,0 +1,68 @@
+1、webpack性能优化：
+    * webpack代码分割：他可以把代码分割到不同的文件中，按需或者并行的加载这些文件。分割后会得到更小的文件，控制文件加载的优先级，优化加载时间.
+    分割的方法的话，可以在配置文件里配置（entry points）
+    * 删除没用的依赖
+    * 在多页面应用中，提取公共代码块，减少不同入口处重叠的代码.
+    * happypack可以让loader多进程的处理文件.
+2、redux：
+      只能通过dispatch，action来修改state。
+      异步处理的时候没有好的方法，只能通过中间件来做，像thunk.
+3、setstate（异步原理）：
+    先观察一下setstate接受的参数，如果第一个是对象，那么他就是一个异步操作，这个时候我们只能通过第二个参数，也就是一个回调函数，才能得到一个实时的状态.如果第一个参数是函数的话，他接收的是新的props和没改的state，这个用得比较少.
+    首先写成setstate异步原因是：
+    如果setstate是同步的话，在react中不可能只有一个state，这样的话多个会造成state阻塞.
+    在state重新渲染的时候，props不会同步更新到dom上，在dom上是没有办法操作props的.
+4、像组件间的通信层级比较大，使用redux来做.
+5、url到页面显示发生了什么
+    首先我们输入url，浏览器会先查看浏览器缓存，系统缓存，和路由缓存，有的话直接显示，没有就继续进行，然后浏览器会利用dns解析地址，并发起tcp连接，建立三次握手，然后发送http请求，请求数据包，服务器收到请求，处理并且响应，浏览器收到响应，渲染到页面上，解析html代码，生成dom树，像dom树就是以HTMLdocument为根节点，其余节点为子节点组成树形的数据结构.另外在这期间可能会遇到需要解析的js代码，那么会停止等待js解析结束后，在进行其他的渲染，也是一个很常见的问题，所以我们要把js放到整个html渲染结束后再去执行.
+6、强缓存和协商缓存
+    我们在第一次获取资源后，会根据返回的信息来决定是以什么形式进行缓存。而当我们在下次请求的时候，会先获取该资源缓存的header信息，判断是否命中强缓存，若命中直接从缓存中获取资源，如果没有命中强缓存，浏览器会请求到服务器并返回第一次的header信息，然后进行对比从而观察是否命中了协商缓存，如果命中会更新新的header里面的信息，并从缓存中获取内容.
+7、tcp三个接口：首先用户向服务器发送一个syn（同步序列编号），等待服务器响应，确认用户的syn，同时响应会一个syn+ack包，后者用户收到syn+ack（确认字符）后，服务器连接成功，这就是三次握手.
+8、dns是否能缓存：能的，在我们多次访问某个相同的地址的时候，dns会在第一次访问后，把这个ip访问的结果临时缓存起来，而后面的多次调用也都是调用这个里面的.
+9、kpi问题:最初的时候，会进行简单的一些考核，像工作态度，项目完成度，主动性啥的，后期的话也就没有.
+10、redux：redux用来处理数据，内部分为三个大的部分进行配合，action reducer store ，在心的state返回到store中以后，我们需要用subscript去使render方法执行，然后渲染到dom上去.但是这种方法很麻烦，在处理多个状态数据的时候.
+11、react-redux：而react-redux就是解决这个问题产生的功能，它主要分为两个主要的部分，provider和connect方法：
+    privider是一个组件，我们一般都会将顶层的组件写在里面，这样我们的所有组件也就可以受react-redux的控制了，但是store要作为参数传入其中，目的就是让所有组件都能访问redux中的数据.
+    connect方法：connect是一个高阶函数，首先传入mapStateToProps、mapDispatchToProps，然后返回一个生产Component的函数(wrapWithConnect)，然后再将真正的Component作为参数传入wrapWithConnect，这样就生产出一个经过包裹的Connect组件，该组件具有如下特点:
+    通过props.store获取祖先Component的store
+    props包括stateProps、dispatchProps、parentProps,合并在一起得到nextState，作为props传给真正的Component
+    componentDidMount时，添加事件this.store.subscribe(this.handleChange)，实现页面交互
+    shouldComponentUpdate时判断是否有避免进行渲染，提升页面性能，并得到nextState
+    componentWillUnmount时移除注册的事件this.handleChange
+12、中间件（thunk，saga）：thunk和saga都是在react中用来解决异步操作的，
+    thunk：出现的原因的在于我们在正常dispath打reducer中的时候，是同步执行的，而这就导致了，我在页面中触发事件请求某个结果，会造成必须等到结果响应回来才能更新视图层，那么解决这个问题我们推出了thunk，对action进行扩展，
+    我们可以在actionCreactor中编写逻辑，扩展action的功能，处理请求结果，等到处理结束后，传入store中，再去通过订阅进行更新.
+    saga：和thunk基本作用相同，而saga主要把逻辑代码放到了saga.js中，和thunk比较的话，具有更多的API，处理大型项目的时候优于thunk.
+13、js中异步方法：
+    回调函数 事件监听 发布订阅 （sunscript）  promise  async+await
+14、react与vue区别
+    * react整体是函数式的思想，把组件设计成纯组件，状态和逻辑通过参数传入，所以是单向数据流，而vue的思想是响应式的，他是基于数据是可变的，当属性发生改变时响应式的更新对应的虚拟dom.
+    * react的内部追求的是所有的都是js，用 jsx语法来写，用js操作css等，vue则是把他们分开，自己独立处理，
+    * react api很少，vue声明式的写法，api很多.
+    * react可以通过高阶组件来扩展，而vue则是通过mixins来扩展.
+ 
+15、跨域：jsonp  cros iframe+window.name
+    jsonp的缺点只能使用get方法。不确定他是否失败，因为没有相关的函数，容易受到攻击.‘
+    cros是web服务通过不同域传来沙盒脚本的办法，避开浏览器的同源策略，他是可以支持大部分的http请求方式的.
+16、es6：
+（arr方法，set，map，sort）：
+
+使用Flex布局会大大降低CSS的难度
+使用Flux可以很好的隔离业务（我们的业务逻辑都在Store里）,大大降低了单元测试的难度
+基于React的控件（这里说的是基本控件）是对React理解的一个体现
+尽量把React组件（Component）做到小，做到细，也就是尽量拆分React组件
+基于数据驱动的方式（Data-Driven）开发，理解到这一点就会发现React很神奇，可能这也是最不好理解的地方
+ImmutableJS带来了大量的好处，所有组件都使用了ShouldComponentUpdate来优化
+实现了I18N的动态加载
+使用了Url来保存Router信息，没有使用Hash，感觉很简洁
+存在的一些问题
+Flux的循环调用问题，可能是一个弊端，但是，总是可以让我们重新思考，我们这样的流程是否完全必要，还是有逻辑不清晰的地方。我遇到过几次循环调用的问题，最终都能通过不使用setTimeout来解决
+还是存在一些冗余的代码，个人认为还是需要引入Model层（虽然我们没有这么做），因为我们是做的数据驱动，所以，有些model内容的验证（如表单验证）可能做在Model里会好些
+还需要改进的地方
+Webpack打包的size还是有些大，可能代码有些冗余
+WebSocket应该在后续加入系统，可能使用Socket.io
+CSS可能还是需要规范，主要参考BEM,OOCSS等规范
+增加更多的动画效果
+开发一套属于自己的组件库，逐步抛弃material-ui库
+
+
